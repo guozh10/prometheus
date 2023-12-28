@@ -1,7 +1,7 @@
 # prometheus
 动态实现监控系统，通过docker-compose 实现 
 
-#docker-compose cp to /usr/local/bin
+# docker-compose cp to /usr/local/bin
 
 curl https://github.com/guozh10/nfs/blob/main/bin/docker-compose -o /usr/local/bin/docker-compose
 
@@ -11,13 +11,15 @@ chmod +x /usr/local/bin/docker-compose
 # consul prometheus 使用官方镜像实现简化部署，方便同学们学习和使用
 
 
-#后台启动
+# 后台启动
+
 docker-compose up -d
 
-#查看日志
+# 查看日志
+
 docker-compose logs -f
 
-#注册consul 
+# 注册consul 
 ```
 cat data.json
 
@@ -47,7 +49,7 @@ curl  -X PUT  http://localhost:8500/v1/agent/service/register --data @data.json
 
 ```
 
-#注销consul
+# 注销consul
 
 curl  -X PUT  http://localhost:8500/v1/agent/service/deregister/192.168.100.20
 
