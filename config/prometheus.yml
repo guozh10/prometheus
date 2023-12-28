@@ -1,0 +1,79 @@
+# my global config
+global:
+  scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+  evaluation_interval: 15s # Evaluate rules every 15 seconds. The default is every 1 minute.
+  # scrape_timeout is set to the global default (10s).
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      # - alertmanager:9093
+
+# Load rules once and periodically evaluate them according to the global 'evaluation_interval'.
+rule_files:
+  # - "first_rules.yml"
+  # - "second_rules.yml"
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'prometheus'
+
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+
+    static_configs:
+    - targets: ['localhost:9090']
+
+#  - job_name: 'light-edge'
+#    file_sd_configs:
+#      - files: ['/data/*.yml']
+#        refresh_interval: 5s
+
+  - job_name: 'consul'
+    consul_sd_configs:
+      - server: '192.168.10.100:8500'
+    relabel_configs:
+    - source_labels: [__meta_consul_tags]
+      regex: (.*vm.*|.*light-edge.*|.*base.*)
+      action: keep   ##对没有匹配到的表达式进行抛弃
+    - regex: __meta_consul_service_metadata_(.+)   #添加meta的重新匹配
+      action: labelmap   #
+
+  - job_name: 'consul-regiter'
+    consul_sd_configs:
+      - server: '192.168.10.100:8500'
+    relabel_configs:
+    - source_labels: [__meta_consul_tags]
+      regex: (.*register.*)
+      action: keep   ##对没有匹配到的表达式进行抛弃
+    - regex: __meta_consul_service_metadata_(.+)   #添加meta的重新匹配
+      action: labelmap   #
+    - source_labels: [__metrics_path__]
+      separator: ;
+      regex: /metrics
+      target_label: __metrics_path__
+      replacement: /api/v1/registering/register
+      action: replace
+
+  - job_name: 'tcpservice'
+    consul_sd_configs:
+      - server: '192.168.10.100:8500'
+        #services: ['webserver']
+    metrics_path:
+    scheme: "http"
+    relabel_configs:
+    - source_labels: [__address__]
+      target_label: __param_target
+    - source_labels: [__param_target]
+      target_label: realip
+    - source_labels: [__meta_consul_tags]
+      regex: (.*tcpservice.*)
+      action: keep   ##对没有匹配到的表达式进行抛弃
+    - regex: __meta_consul_service_metadata_(.+)   #添加meta的重新匹配
+      action: labelmap   #
+
+    

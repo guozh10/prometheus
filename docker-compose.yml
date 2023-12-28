@@ -1,0 +1,20 @@
+version: '3'
+services:
+  server:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./config/discover:/data/
+      - ./config/data/prometheus:/prometheus
+    restart: on-failure
+
+  consul:
+    image: consul:latest
+    container_name: consul-server
+    ports:
+      - 8500:8500 
+    volumes:
+      - ./consul/config:/consul/config
+    restart: on-failure
